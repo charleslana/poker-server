@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PageDto } from '@dto/page.dto';
+import { PageDto } from '@/dto/page.dto';
 import { Prisma, User } from '@prisma/client';
-import { PrismaService } from '@database/prisma.service';
+import { PrismaService } from '@/database/prisma.service';
 import { UserPaginatedDto } from './dto/user.paginated.dto';
 
 @Injectable()

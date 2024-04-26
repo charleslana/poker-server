@@ -1,6 +1,6 @@
-import { AppModule } from '@app.module';
+import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
-import { setup } from '@setup';
+import { setup } from './setup';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {

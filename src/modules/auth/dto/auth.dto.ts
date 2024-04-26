@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 import { IsEmail, IsNotEmpty } from 'class-validator';
-import { UserDto } from '@modules/user/dto/user.dto';
+import { UserDto } from '@/modules/user/dto/user.dto';
 
 export class AuthDto extends UserDto {
   @IsEmail()

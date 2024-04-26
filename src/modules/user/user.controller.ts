@@ -1,13 +1,13 @@
-import { AuthGuard } from '@modules/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
-import { FindOneParams } from '@modules/find-one.params';
+import { FindOneParams } from '../find-one.params';
 import { GetUserDto } from './dto/get-user.dto';
-import { PageDto } from '@dto/page.dto';
+import { PageDto } from '@/dto/page.dto';
 import { plainToInstance } from 'class-transformer';
 import { Request as ERequest } from 'express';
 import { Response } from 'express';
 import { RoleEnum } from '@prisma/client';
-import { RoleGuard } from '@modules/auth/role.guard';
+import { RoleGuard } from '../auth/role.guard';
 import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto';
 import { UserPaginatedDto } from './dto/user.paginated.dto';
 import { UserService } from './user.service';
