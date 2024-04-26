@@ -1,8 +1,8 @@
-import { BusinessRuleException } from 'src/helpers/error/BusinessRuleException';
+import { BusinessRuleException } from '@helpers/error/BusinessRuleException';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Injectable } from '@nestjs/common';
-import { PageDto } from 'src/dto/page.dto';
-import { ResponseMessage } from 'src/helpers/ResponseMessage';
+import { PageDto } from '@dto/page.dto';
+import { ResponseMessage } from '@helpers/ResponseMessage';
 import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto';
 import { UserRepository } from './user.repository';
 

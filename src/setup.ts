@@ -1,6 +1,6 @@
 import { ClassSerializerInterceptor, INestApplication } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Reflector } from '@nestjs/core';
 
 export function setup(app: INestApplication) {
   app.useGlobalInterceptors(
