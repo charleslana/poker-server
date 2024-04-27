@@ -21,9 +21,12 @@ export class UserRepository {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: {
-        email,
+        email: {
+          contains: email,
+          mode: 'insensitive',
+        },
       },
       include: {
         roles: true,
@@ -40,9 +43,12 @@ export class UserRepository {
   }
 
   async findByName(name: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: {
-        name,
+        name: {
+          contains: name,
+          mode: 'insensitive',
+        },
       },
     });
   }
