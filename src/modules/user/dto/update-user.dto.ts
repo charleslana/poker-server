@@ -1,10 +1,19 @@
-import { IsNotEmpty, IsNumber, Matches, MaxLength, Min, MinLength } from 'class-validator';
 import { UserDto } from './user.dto';
+import {
+  IsNotEmpty,
+  IsNumber,
+  Matches,
+  MaxLength,
+  Min,
+  MinLength,
+  NotContains,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(15)
+  @NotContains(' ')
   @Matches(/^[a-zA-Z0-9]*$/, { message: 'O nome deve conter apenas letras e números' })
   name: string;
 
