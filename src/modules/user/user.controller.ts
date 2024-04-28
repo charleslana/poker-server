@@ -23,14 +23,19 @@ import {
   Request,
   UseGuards,
   Query,
+  Logger,
 } from '@nestjs/common';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  private readonly logger = new Logger(UserController.name);
+
   @Post()
-  async createUser(@Body() createUserDto: CreateUserDto) {
+  async createUser(@Body() createUserDto: CreateUserDto, @Request() req: ERequest) {
+    this.logger.log(`createUser: Request made to ${req.url}`);
+    this.logger.log(`Data sent: ${JSON.stringify(createUserDto.email)}`);
     const user = await this.userService.createUser(createUserDto);
     return plainToInstance(GetUserDto, user);
   }
