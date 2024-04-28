@@ -48,8 +48,10 @@ export class UserController {
     return plainToInstance(GetUserDto, users);
   }
 
+  @UseGuards(AuthGuard)
   @Put()
-  async updateUser(@Body() updateUserDto: UpdateUserDto) {
+  async updateUser(@Body() updateUserDto: UpdateUserDto, @Request() req: ERequest) {
+    updateUserDto.id = req.user.sub;
     const user = await this.userService.updateUser(updateUserDto);
     return plainToInstance(GetUserDto, user);
   }

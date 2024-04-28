@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { UserDto } from './user.dto';
 import {
   IsNotEmpty,
@@ -17,8 +18,7 @@ export class UpdateUserDto {
   @Matches(/^[a-zA-Z0-9]*$/, { message: 'O nome deve conter apenas letras e números' })
   name: string;
 
-  @IsNumber()
-  @Min(1)
+  @Exclude()
   id: number;
 }
 
