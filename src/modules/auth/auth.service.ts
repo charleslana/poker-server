@@ -1,7 +1,20 @@
+import { $Enums } from '@prisma/client';
 import { AuthDto } from './dto/auth.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
+
+interface TokenPayload {
+  sub: number;
+  email: string;
+  roles: {
+    id: number;
+    name: $Enums.RoleEnum;
+    userId: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+}
 
 @Injectable()
 export class AuthService {
@@ -16,9 +29,10 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException();
     }
-    const payload = { sub: user.id, email: user.email, roles: user.roles };
+    const payload: TokenPayload = { sub: user.id, email: user.email, roles: user.roles };
+    const access_token = await this.jwtService.signAsync(payload);
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token,
     };
   }
 }
