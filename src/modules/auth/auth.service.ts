@@ -27,7 +27,7 @@ export class AuthService {
     const user = await this.userService.getUserByEmail(dto.email);
     const isPasswordValid = await dto.decryptPassword(dto.password, user?.password || '');
     if (!isPasswordValid) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Usuário ou senha inválida');
     }
     const payload: TokenPayload = { sub: user.id, email: user.email, roles: user.roles };
     const access_token = await this.jwtService.signAsync(payload);
