@@ -1,7 +1,7 @@
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindOneParams } from '../find-one.params';
-import { GetUserDto } from './dto/get-user.dto';
+import { GetUserDto, GetUserExposeDto } from './dto/get-user.dto';
 import { PageDto } from '@/dto/page.dto';
 import { plainToInstance } from 'class-transformer';
 import { Request as ERequest } from 'express';
@@ -40,15 +40,20 @@ export class UserController {
     return plainToInstance(GetUserDto, user);
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
-  async findOne(@Param() params: FindOneParams) {
+  async findOne(@Param() params: FindOneParams, @Request() req: ERequest) {
+    this.logger.log(`findOne: Request made to ${req.url}`);
+    this.logger.log(`Data sent: ${JSON.stringify(params)}`);
     const { id } = params;
     const user = await this.userService.getUser(id);
-    return plainToInstance(GetUserDto, user);
+    return plainToInstance(GetUserExposeDto, user);
   }
 
+  @UseGuards(AuthGuard, new RoleGuard([RoleEnum.admin]))
   @Get()
-  async getUsers(): Promise<GetUserDto[]> {
+  async getUsers(@Request() req: ERequest): Promise<GetUserDto[]> {
+    this.logger.log(`getUsers: Request made to ${req.url}`);
     const users = await this.userService.getUsers();
     return plainToInstance(GetUserDto, users);
   }
@@ -56,6 +61,9 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Put()
   async updateUser(@Body() updateUserDto: UpdateUserDto, @Request() req: ERequest) {
+    this.logger.log(`updateUser: Request made to ${req.url}`);
+    this.logger.log(`Data sent: ${JSON.stringify(updateUserDto)}`);
+    this.logger.log(`Data sent: ${JSON.stringify(req.user.sub)}`);
     updateUserDto.id = req.user.sub;
     const user = await this.userService.updateUser(updateUserDto);
     return plainToInstance(GetUserDto, user);
@@ -63,14 +71,23 @@ export class UserController {
 
   @UseGuards(AuthGuard, new RoleGuard([RoleEnum.admin]))
   @Delete(':id')
-  async deleteUser(@Param() params: FindOneParams, @Res() res: Response) {
+  async deleteUser(@Param() params: FindOneParams, @Res() res: Response, @Request() req: ERequest) {
+    this.logger.log(`deleteUser: Request made to ${req.url}`);
+    this.logger.log(`Data sent: ${JSON.stringify(params)}`);
     const { id } = params;
     const response = await this.userService.deleteUser(id);
     return res.status(response.statusCode).json(response.toJson());
   }
 
+  @UseGuards(AuthGuard)
   @Put('change-password')
-  async updateUserPassword(@Body() updateUserPasswordDto: UpdateUserPasswordDto) {
+  async updateUserPassword(
+    @Body() updateUserPasswordDto: UpdateUserPasswordDto,
+    @Request() req: ERequest
+  ) {
+    this.logger.log(`updateUserPassword: Request made to ${req.url}`);
+    this.logger.log(`Data sent: ${JSON.stringify(req.user.sub)}`);
+    updateUserPasswordDto.id = req.user.sub;
     const user = await this.userService.updateUserPassword(updateUserPasswordDto);
     return plainToInstance(GetUserDto, user);
   }
@@ -78,14 +95,22 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Get('profile/me')
   async getMe(@Request() req: ERequest) {
+    this.logger.log(`getMe: Request made to ${req.url}`);
+    this.logger.log(`Data sent: ${JSON.stringify(req.user.sub)}`);
     const userId = req.user.sub;
     const user = await this.userService.getUser(userId);
     return plainToInstance(GetUserDto, user);
   }
 
+  @UseGuards(AuthGuard)
   @Get('all/paginated')
-  async getUsersPaginated(@Query() page: PageDto): Promise<UserPaginatedDto<GetUserDto>> {
+  async getUsersPaginated(
+    @Query() page: PageDto,
+    @Request() req: ERequest
+  ): Promise<UserPaginatedDto<GetUserExposeDto>> {
+    this.logger.log(`getUsersPaginated: Request made to ${req.url}`);
+    this.logger.log(`Data sent: ${JSON.stringify(page)}`);
     const usersPaginated = await this.userService.getUsersPaginated(page);
-    return plainToInstance(UserPaginatedDto<GetUserDto>, usersPaginated);
+    return plainToInstance(UserPaginatedDto<GetUserExposeDto>, usersPaginated);
   }
 }

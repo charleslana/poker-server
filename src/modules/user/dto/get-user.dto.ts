@@ -16,3 +16,11 @@ export class GetUserDto {
   @Expose()
   updatedAt: Date;
 }
+
+export class GetUserExposeDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string | null;
+}

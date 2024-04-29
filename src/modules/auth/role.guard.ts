@@ -1,6 +1,12 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
 import { Role, RoleEnum } from '@prisma/client';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -17,10 +23,12 @@ export class RoleGuard implements CanActivate {
     });
     try {
       if (this.roles.length > 0 && userRoles.length === 0) {
-        return false;
+        const logger = new Logger(RoleGuard.name);
+        logger.error('Forbidden resource');
+        throw new ForbiddenException();
       }
     } catch {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     return true;
   }

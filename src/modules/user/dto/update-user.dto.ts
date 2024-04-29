@@ -1,14 +1,6 @@
 import { Exclude } from 'class-transformer';
+import { IsNotEmpty, Matches, MaxLength, MinLength, NotContains } from 'class-validator';
 import { UserDto } from './user.dto';
-import {
-  IsNotEmpty,
-  IsNumber,
-  Matches,
-  MaxLength,
-  Min,
-  MinLength,
-  NotContains,
-} from 'class-validator';
 
 export class UpdateUserDto {
   @IsNotEmpty()
@@ -31,7 +23,6 @@ export class UpdateUserPasswordDto extends UserDto {
   @MaxLength(30)
   newPassword: string;
 
-  @IsNumber()
-  @Min(1)
+  @Exclude()
   id: number;
 }
