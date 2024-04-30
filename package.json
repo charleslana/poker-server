@@ -17,7 +17,8 @@
     "migrate": "npx prisma migrate dev",
     "studio": "npx prisma studio",
     "kill": "kill -9 $(lsof -ti:3000)",
-    "dev": "npm run start:dev"
+    "dev": "npm run start:dev",
+    "prod": "npm run build && npm run start:prod"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.2",
