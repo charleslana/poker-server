@@ -10,6 +10,6 @@ export class SocketGateway implements OnGatewayConnection {
   private server: Socket;
 
   handleConnection(socket: Socket): void {
-    this.socketService.handleConnection(socket);
+    this.socketService.handleConnection(socket, this.server);
   }
 }

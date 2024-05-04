@@ -19,4 +19,8 @@ export class SocketUserService {
   getAllUsers(): UserInterface[] {
     return this.users;
   }
+
+  getUser(id: string): UserInterface | undefined {
+    return this.users.find((user) => user.id === id);
+  }
 }
