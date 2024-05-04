@@ -40,6 +40,10 @@ npx prisma migrate dev --name init --skip-generate
 nest g module modules/user
 ```
 
+```
+npx nest generate module modules/socket
+```
+
 ## Running the app
 
 ```bash

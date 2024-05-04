@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { Module } from '@nestjs/common';
+import { SocketModule } from './modules/socket/socket.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { UserController } from './modules/user/user.controller';
 import { UserModule } from './modules/user/user.module';
@@ -18,6 +19,7 @@ import { ValidationInterceptor } from './helpers/interceptor/ValidationIntercept
         limit: 100,
       },
     ]),
+    SocketModule,
   ],
   controllers: [AppController, UserController],
   providers: [
