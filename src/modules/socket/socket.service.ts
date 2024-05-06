@@ -18,11 +18,13 @@ export class SocketService {
   handleConnection(socket: Socket, server: Server): void {
     this.handleConnect(socket);
     this.handleDisconnect(socket, server);
+    this.handleGetAllUsers(socket, server);
     this.handleUpdateUserName(socket, server);
     this.handleSendMessage(socket, server);
     this.handleCreateRoom(socket, server);
     this.handleRooms(socket, server);
     this.handleJoinRoom(socket, server);
+    this.handleLeaveRoom(socket, server);
   }
 
   private handleConnect(socket: Socket): void {
@@ -54,6 +56,12 @@ export class SocketService {
     server.emit('allUsers', allUsers);
   }
 
+  private handleGetAllUsers(socket: Socket, server: Server): void {
+    socket.on('getAllUsers', () => {
+      this.getAllUsers(server);
+    });
+  }
+
   private handleUpdateUserName(socket: Socket, server: Server): void {
     socket.on('updateUserName', (newName: string) => {
       this.socketUserService.updateUserName(socket.id, newName);
@@ -81,8 +89,8 @@ export class SocketService {
     socket.on('createRoom', (rooName: string) => {
       const userId = socket.id;
       const roomId = userId;
-      if (!this.socketRoomService.hasUserInAnyRoom(userId)) {
-        const user = this.socketUserService.getUser(userId);
+      const user = this.socketUserService.getUser(userId);
+      if (user && !this.socketRoomService.hasUserInAnyRoom(userId)) {
         const room = this.socketRoomService.addRoom({
           id: roomId,
           name: rooName,
@@ -113,11 +121,12 @@ export class SocketService {
   private handleJoinRoom(socket: Socket, server: Server): void {
     socket.on('joinRoom', (roomId: string) => {
       const userId = socket.id;
+      const user = this.socketUserService.getUser(userId);
       if (
+        user &&
         !this.socketRoomService.hasUserInAnyRoom(userId) &&
         this.socketRoomService.getRoom(roomId)
       ) {
-        const user = this.socketUserService.getUser(userId);
         this.socketRoomService.addUserToRoom(roomId, user);
         this.socketUserService.removeUser(userId);
         this.getAllUsers(server);
@@ -127,6 +136,19 @@ export class SocketService {
         server.emit('joinRoomSuccess', room);
         this.logger.log('Room joined ID:', roomId);
       }
+    });
+  }
+
+  private handleLeaveRoom(socket: Socket, server: Server): void {
+    socket.on('leaveRoom', (roomId: string, userName: string) => {
+      socket.leave(roomId);
+      this.socketRoomService.removeUserFromRoom(roomId, socket.id);
+      this.socketUserService.addUser({ id: socket.id, name: socket.id });
+      this.socketUserService.updateUserName(socket.id, userName);
+      socket.join('lobby-room');
+      this.getRoom(server, roomId);
+      this.getAllRooms(server);
+      socket.emit('leaveRoomSuccess');
     });
   }
 
