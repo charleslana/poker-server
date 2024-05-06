@@ -1,13 +1,26 @@
+import { instrument } from '@socket.io/admin-ui';
 import { OnGatewayConnection, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { SocketService } from './socket.service';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({
+  cors: {
+    origin: ['http://localhost:8080', 'http://localhost:4000', 'http://localhost:4001'],
+    credentials: true,
+  },
+})
 export class SocketGateway implements OnGatewayConnection {
   constructor(private readonly socketService: SocketService) {}
 
+  onModuleInit() {
+    instrument(this.server, {
+      auth: false,
+      mode: 'development',
+    });
+  }
+
   @WebSocketServer()
-  private server: Socket;
+  private server: Server;
 
   handleConnection(socket: Socket): void {
     this.socketService.handleConnection(socket, this.server);

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Socket } from 'socket.io';
+import { RoomInterface } from './interface/room.interface';
+import { Server, Socket } from 'socket.io';
 import { SocketMessageService } from './socket.message.service';
 import { SocketRoomService } from './socket.room.service';
 import { SocketUserService } from './socket.user.service';
@@ -14,40 +15,53 @@ export class SocketService {
 
   private readonly logger = new Logger(SocketService.name);
 
-  handleConnection(socket: Socket, server: Socket): void {
-    this.handleConnect(socket, server);
+  handleConnection(socket: Socket, server: Server): void {
+    this.handleConnect(socket);
     this.handleDisconnect(socket, server);
+    this.handleUpdateUserName(socket, server);
     this.handleSendMessage(socket, server);
     this.handleCreateRoom(socket, server);
     this.handleRooms(socket, server);
+    this.handleJoinRoom(socket, server);
   }
 
-  private handleConnect(socket: Socket, server: Socket): void {
+  private handleConnect(socket: Socket): void {
     const clientId = socket.id;
     this.socketUserService.addUser({ id: clientId, name: clientId });
-    this.getAllUsers(server);
+    socket.join('lobby-room');
     this.logger.log(`Usuário conectado: ${clientId}`);
   }
 
-  private handleDisconnect(socket: Socket, server: Socket): void {
+  private handleDisconnect(socket: Socket, server: Server): void {
     socket.on('disconnect', () => {
       const clientId = socket.id;
       this.socketUserService.removeUser(clientId);
       this.getAllUsers(server);
-      const isRoomRemoved = this.socketRoomService.removeUserFromRoom(clientId, clientId);
-      if (isRoomRemoved) {
+      const existRoom = this.socketRoomService.getRoomByUser(clientId);
+      if (existRoom) {
+        socket.leave(existRoom.id);
+        this.socketRoomService.removeUserFromRoom(existRoom.id, clientId);
         this.getAllRooms(server);
+        this.getRoom(server, existRoom.id);
       }
+      socket.leave('lobby-room');
       this.logger.log(`Usuário desconectado: ${clientId}`);
     });
   }
 
-  private getAllUsers(server: Socket): void {
+  private getAllUsers(server: Server): void {
     const allUsers = this.socketUserService.getAllUsers();
     server.emit('allUsers', allUsers);
   }
 
-  private handleSendMessage(socket: Socket, server: Socket): void {
+  private handleUpdateUserName(socket: Socket, server: Server): void {
+    socket.on('updateUserName', (newName: string) => {
+      this.socketUserService.updateUserName(socket.id, newName);
+      this.getAllUsers(server);
+    });
+  }
+
+  private handleSendMessage(socket: Socket, server: Server): void {
     socket.on('sendMessage', (message: string) => {
       const senderId = socket.id;
       const user = this.socketUserService.getUser(senderId);
@@ -63,32 +77,62 @@ export class SocketService {
     });
   }
 
-  private handleCreateRoom(socket: Socket, server: Socket): void {
+  private handleCreateRoom(socket: Socket, server: Server): void {
     socket.on('createRoom', (rooName: string) => {
       const userId = socket.id;
+      const roomId = userId;
       if (!this.socketRoomService.hasUserInAnyRoom(userId)) {
         const user = this.socketUserService.getUser(userId);
-        this.socketRoomService.addRoom({
-          id: userId,
+        const room = this.socketRoomService.addRoom({
+          id: roomId,
           name: rooName,
           users: [user],
         });
         this.getAllRooms(server);
         this.socketUserService.removeUser(userId);
         this.getAllUsers(server);
+        socket.leave('lobby-room');
+        socket.join(roomId);
+        server.emit('createRoomSuccess', room);
         this.logger.log('Room created:', rooName);
       }
     });
   }
 
-  private getAllRooms(server: Socket): void {
+  private getAllRooms(server: Server): void {
     const allRooms = this.socketRoomService.getAllRooms();
     server.emit('allRooms', allRooms);
   }
 
-  private handleRooms(socket: Socket, server: Socket): void {
+  private handleRooms(socket: Socket, server: Server): void {
     socket.on('getAllRooms', () => {
       this.getAllRooms(server);
     });
+  }
+
+  private handleJoinRoom(socket: Socket, server: Server): void {
+    socket.on('joinRoom', (roomId: string) => {
+      const userId = socket.id;
+      if (
+        !this.socketRoomService.hasUserInAnyRoom(userId) &&
+        this.socketRoomService.getRoom(roomId)
+      ) {
+        const user = this.socketUserService.getUser(userId);
+        this.socketRoomService.addUserToRoom(roomId, user);
+        this.socketUserService.removeUser(userId);
+        this.getAllUsers(server);
+        const room = this.getRoom(server, roomId);
+        socket.leave('lobby-room');
+        socket.join(roomId);
+        server.emit('joinRoomSuccess', room);
+        this.logger.log('Room joined ID:', roomId);
+      }
+    });
+  }
+
+  private getRoom(server: Server, roomId: string): RoomInterface {
+    const room = this.socketRoomService.getRoom(roomId);
+    server.to(roomId).emit('getRoom', room);
+    return room;
   }
 }

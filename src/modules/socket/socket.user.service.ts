@@ -23,4 +23,11 @@ export class SocketUserService {
   getUser(id: string): UserInterface | undefined {
     return this.users.find((user) => user.id === id);
   }
+
+  updateUserName(id: string, newName: string): void {
+    const user = this.getUser(id);
+    if (user) {
+      user.name = newName;
+    }
+  }
 }
