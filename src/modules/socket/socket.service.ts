@@ -38,7 +38,7 @@ export class SocketService {
     socket.on('disconnect', () => {
       const clientId = socket.id;
       this.socketUserService.removeUser(clientId);
-      this.getAllUsers(server);
+      this.getAllUsers(socket, server);
       const existRoom = this.socketRoomService.getRoomByUser(clientId);
       if (existRoom) {
         socket.leave(existRoom.id);
@@ -51,21 +51,22 @@ export class SocketService {
     });
   }
 
-  private getAllUsers(server: Server): void {
+  private getAllUsers(_socket: Socket, server: Server): void {
     const allUsers = this.socketUserService.getAllUsers();
     server.emit('allUsers', allUsers);
   }
 
   private handleGetAllUsers(socket: Socket, server: Server): void {
     socket.on('getAllUsers', () => {
-      this.getAllUsers(server);
+      this.getAllUsers(socket, server);
     });
   }
 
   private handleUpdateUserName(socket: Socket, server: Server): void {
     socket.on('updateUserName', (newName: string) => {
       this.socketUserService.updateUserName(socket.id, newName);
-      this.getAllUsers(server);
+      this.getAllUsers(socket, server);
+      socket.emit('joinLobbySuccess');
     });
   }
 
@@ -98,7 +99,7 @@ export class SocketService {
         });
         this.getAllRooms(server);
         this.socketUserService.removeUser(userId);
-        this.getAllUsers(server);
+        this.getAllUsers(socket, server);
         socket.leave('lobby-room');
         socket.join(roomId);
         server.emit('createRoomSuccess', room);
@@ -129,7 +130,7 @@ export class SocketService {
       ) {
         this.socketRoomService.addUserToRoom(roomId, user);
         this.socketUserService.removeUser(userId);
-        this.getAllUsers(server);
+        this.getAllUsers(socket, server);
         const room = this.getRoom(server, roomId);
         socket.leave('lobby-room');
         socket.join(roomId);

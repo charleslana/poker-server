@@ -6,7 +6,9 @@ export class SocketUserService {
   private users: UserInterface[] = [];
 
   addUser(user: UserInterface): void {
-    this.users.push(user);
+    if (!this.userExists(user.id)) {
+      this.users.push(user);
+    }
   }
 
   removeUser(id: string): void {
@@ -29,5 +31,9 @@ export class SocketUserService {
     if (user) {
       user.name = newName;
     }
+  }
+
+  private userExists(id: string): boolean {
+    return this.users.some((user) => user.id === id);
   }
 }
