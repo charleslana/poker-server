@@ -60,6 +60,10 @@ export class SocketRoomService {
     return this.rooms.some((room) => this.isUserInRoom(room, userId));
   }
 
+  hasUserOriginalIdInAnyRoom(userId: number): boolean {
+    return this.rooms.some((room) => this.isUserOriginalIdInRoom(room, userId));
+  }
+
   addUserToRoom(roomId: string, user: UserInterface): void {
     const room = this.getRoom(roomId);
     if (room) {
@@ -73,5 +77,9 @@ export class SocketRoomService {
 
   private isUserInRoom(room: RoomInterface, userId: string): boolean {
     return room.users.some((user) => user.id === userId);
+  }
+
+  private isUserOriginalIdInRoom(room: RoomInterface, originalId: number): boolean {
+    return room.users.some((user) => user.originalId === originalId);
   }
 }

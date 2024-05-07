@@ -13,6 +13,6 @@ import { SocketUserService } from './socket.user.service';
     SocketMessageService,
     SocketRoomService,
   ],
-  exports: [SocketUserService],
+  exports: [SocketUserService, SocketRoomService],
 })
 export class SocketModule {}
