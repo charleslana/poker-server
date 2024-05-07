@@ -63,8 +63,9 @@ export class SocketService {
   }
 
   private handleUpdateUserName(socket: Socket, server: Server): void {
-    socket.on('updateUserName', (newName: string) => {
+    socket.on('updateUserName', (newName: string, originalId: number) => {
       this.socketUserService.updateUserName(socket.id, newName);
+      this.socketUserService.updateUserOriginalId(socket.id, originalId);
       this.getAllUsers(socket, server);
       socket.emit('joinLobbySuccess');
     });
@@ -141,11 +142,12 @@ export class SocketService {
   }
 
   private handleLeaveRoom(socket: Socket, server: Server): void {
-    socket.on('leaveRoom', (roomId: string, userName: string) => {
+    socket.on('leaveRoom', (roomId: string, userName: string, originalId: number) => {
       socket.leave(roomId);
       this.socketRoomService.removeUserFromRoom(roomId, socket.id);
       this.socketUserService.addUser({ id: socket.id, name: socket.id });
       this.socketUserService.updateUserName(socket.id, userName);
+      this.socketUserService.updateUserOriginalId(socket.id, originalId);
       socket.join('lobby-room');
       this.getRoom(server, roomId);
       this.getAllRooms(server);

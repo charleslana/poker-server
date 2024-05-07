@@ -33,6 +33,17 @@ export class SocketUserService {
     }
   }
 
+  updateUserOriginalId(id: string, originalId: number): void {
+    const user = this.getUser(id);
+    if (user) {
+      user.originalId = originalId;
+    }
+  }
+
+  userOriginalIdExists(originalId: number): boolean {
+    return this.users.some((user) => user.originalId === originalId);
+  }
+
   private userExists(id: string): boolean {
     return this.users.some((user) => user.id === id);
   }

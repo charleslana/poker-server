@@ -11,6 +11,7 @@ import { RoleGuard } from '../auth/role.guard';
 import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto';
 import { UserPaginatedDto } from './dto/user.paginated.dto';
 import { UserService } from './user.service';
+import { UserSocketExistsGuard } from '../auth/user.socket.exists.guard';
 import {
   Body,
   Controller,
@@ -92,7 +93,7 @@ export class UserController {
     return plainToInstance(GetUserDto, user);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, UserSocketExistsGuard)
   @Get('profile/me')
   async getMe(@Request() req: ERequest) {
     this.logger.log(`getMe: Request made to ${req.url}`);
