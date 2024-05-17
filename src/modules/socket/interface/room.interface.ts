@@ -4,4 +4,5 @@ export interface RoomInterface {
   id: string;
   name: string;
   users: UserInterface[];
+  ownerId?: number;
 }

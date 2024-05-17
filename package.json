@@ -22,6 +22,7 @@
     "socket:adm": "npx serve node_modules/@socket.io/admin-ui/ui/dist -s -l 4001"
   },
   "dependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@nestjs/common": "^10.3.2",
     "@nestjs/core": "^10.3.2",
     "@nestjs/jwt": "^10.2.0",

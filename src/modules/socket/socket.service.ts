@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { Injectable, Logger } from '@nestjs/common';
 import { RoomInterface } from './interface/room.interface';
 import { Server, Socket } from 'socket.io';
@@ -42,6 +43,8 @@ export class SocketService {
       const existRoom = this.socketRoomService.getRoomByUser(clientId);
       if (existRoom) {
         socket.leave(existRoom.id);
+        const user = existRoom.users.find((user) => user.id === clientId);
+        this.changeRoomOwner(existRoom.id, clientId, user.originalId);
         this.socketRoomService.removeUserFromRoom(existRoom.id, clientId);
         this.getAllRooms(server);
         this.getRoom(server, existRoom.id);
@@ -90,13 +93,14 @@ export class SocketService {
   private handleCreateRoom(socket: Socket, server: Server): void {
     socket.on('createRoom', (rooName: string) => {
       const userId = socket.id;
-      const roomId = userId;
+      const roomId = faker.string.uuid();
       const user = this.socketUserService.getUser(userId);
       if (user && !this.socketRoomService.hasUserInAnyRoom(userId)) {
         const room = this.socketRoomService.addRoom({
           id: roomId,
           name: rooName,
           users: [user],
+          ownerId: user.originalId,
         });
         this.getAllRooms(server);
         this.socketUserService.removeUser(userId);
@@ -144,6 +148,7 @@ export class SocketService {
   private handleLeaveRoom(socket: Socket, server: Server): void {
     socket.on('leaveRoom', (roomId: string, userName: string, originalId: number) => {
       socket.leave(roomId);
+      this.changeRoomOwner(roomId, socket.id, originalId);
       this.socketRoomService.removeUserFromRoom(roomId, socket.id);
       this.socketUserService.addUser({ id: socket.id, name: socket.id });
       this.socketUserService.updateUserName(socket.id, userName);
@@ -152,7 +157,16 @@ export class SocketService {
       this.getRoom(server, roomId);
       this.getAllRooms(server);
       socket.emit('leaveRoomSuccess');
+      this.logger.log('Room leave ID:', roomId);
     });
+  }
+
+  private changeRoomOwner(roomId: string, clientId: string, originalId: number): void {
+    const isRoomOwner = this.socketRoomService.isRoomOwner(roomId, originalId);
+    const userLast = this.socketRoomService.getLastUserExcept(roomId, clientId);
+    if (isRoomOwner && userLast) {
+      this.socketRoomService.updateRoomOwnerId(roomId, userLast.originalId);
+    }
   }
 
   private getRoom(server: Server, roomId: string): RoomInterface {

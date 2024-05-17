@@ -26,6 +26,24 @@ export class SocketRoomService {
     return this.rooms.find((room) => room.id === id);
   }
 
+  updateRoomOwnerId(roomId: string, newOwnerId: number): void {
+    const room = this.getRoom(roomId);
+    if (room) {
+      room.ownerId = newOwnerId;
+    }
+  }
+
+  getLastUserExcept(roomId: string, excludedUserId: string): UserInterface | undefined {
+    const room = this.getRoom(roomId);
+    if (room) {
+      const usersExceptExcluded = room.users.filter((user) => user.id !== excludedUserId);
+      if (usersExceptExcluded.length > 0) {
+        return usersExceptExcluded[usersExceptExcluded.length - 1];
+      }
+    }
+    return undefined;
+  }
+
   removeUserFromRoom(roomId: string, userId: string): void {
     const room = this.getRoom(roomId);
     if (room) {
@@ -44,9 +62,9 @@ export class SocketRoomService {
     }
   }
 
-  isRoomOwner(roomId: string, userId: string): boolean {
+  isRoomOwner(roomId: string, userOriginalId: number): boolean {
     const room = this.getRoom(roomId);
-    return room ? room.users.some((user) => user.id === userId) : false;
+    return room ? room.ownerId === userOriginalId : false;
   }
 
   updateRoomId(oldId: string, newId: string): void {
