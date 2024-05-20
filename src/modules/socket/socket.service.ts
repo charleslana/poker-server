@@ -26,6 +26,7 @@ export class SocketService {
     this.handleRooms(socket, server);
     this.handleJoinRoom(socket, server);
     this.handleLeaveRoom(socket, server);
+    this.handleChangeUserWatch(socket, server);
   }
 
   private handleConnect(socket: Socket): void {
@@ -96,6 +97,7 @@ export class SocketService {
       const roomId = faker.string.uuid();
       const user = this.socketUserService.getUser(userId);
       if (user && !this.socketRoomService.hasUserInAnyRoom(userId)) {
+        user.watch = false;
         const room = this.socketRoomService.addRoom({
           id: roomId,
           name: rooName,
@@ -133,6 +135,7 @@ export class SocketService {
         !this.socketRoomService.hasUserInAnyRoom(userId) &&
         this.socketRoomService.getRoom(roomId)
       ) {
+        user.watch = true;
         this.socketRoomService.addUserToRoom(roomId, user);
         this.socketUserService.removeUser(userId);
         this.getAllUsers(socket, server);
@@ -173,5 +176,12 @@ export class SocketService {
     const room = this.socketRoomService.getRoom(roomId);
     server.to(roomId).emit('getRoom', room);
     return room;
+  }
+
+  private handleChangeUserWatch(socket: Socket, server: Server): void {
+    socket.on('changeWatch', (roomId: string, watch: boolean) => {
+      this.socketRoomService.updateUserNameInRoom(roomId, socket.id, watch);
+      this.getRoom(server, roomId);
+    });
   }
 }
