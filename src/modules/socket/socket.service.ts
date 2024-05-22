@@ -143,6 +143,7 @@ export class SocketService {
         socket.leave('lobby-room');
         socket.join(roomId);
         server.emit('joinRoomSuccess', room);
+        this.getAllRooms(server);
         this.logger.log('Room joined ID:', roomId);
       }
     });
@@ -182,6 +183,7 @@ export class SocketService {
     socket.on('changeWatch', (roomId: string, watch: boolean) => {
       this.socketRoomService.updateUserNameInRoom(roomId, socket.id, watch);
       this.getRoom(server, roomId);
+      this.getAllRooms(server);
     });
   }
 }
