@@ -89,7 +89,7 @@ export class SocketRoomService {
     }
   }
 
-  updateUserNameInRoom(roomId: string, userId: string, watch: boolean): void {
+  updateUserWatchInRoom(roomId: string, userId: string, watch: boolean): void {
     const room = this.getRoom(roomId);
     if (room) {
       const userToUpdate = room.users.find((user) => user.id === userId);

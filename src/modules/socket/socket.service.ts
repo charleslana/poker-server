@@ -169,6 +169,7 @@ export class SocketService {
     const isRoomOwner = this.socketRoomService.isRoomOwner(roomId, originalId);
     const userLast = this.socketRoomService.getLastUserExcept(roomId, clientId);
     if (isRoomOwner && userLast) {
+      userLast.watch = false;
       this.socketRoomService.updateRoomOwnerId(roomId, userLast.originalId);
     }
   }
@@ -180,10 +181,13 @@ export class SocketService {
   }
 
   private handleChangeUserWatch(socket: Socket, server: Server): void {
-    socket.on('changeWatch', (roomId: string, watch: boolean) => {
-      this.socketRoomService.updateUserNameInRoom(roomId, socket.id, watch);
-      this.getRoom(server, roomId);
-      this.getAllRooms(server);
+    socket.on('changeWatch', (roomId: string, watch: boolean, originalId: number) => {
+      const isRoomOwner = this.socketRoomService.isRoomOwner(roomId, originalId);
+      if (!isRoomOwner) {
+        this.socketRoomService.updateUserWatchInRoom(roomId, socket.id, watch);
+        this.getRoom(server, roomId);
+        this.getAllRooms(server);
+      }
     });
   }
 }
