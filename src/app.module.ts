@@ -8,6 +8,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { UserController } from './modules/user/user.controller';
 import { UserModule } from './modules/user/user.module';
 import { ValidationInterceptor } from './helpers/interceptor/ValidationInterceptor';
+import { CronjobService } from './modules/cronjob/cronjob.service';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ValidationInterceptor } from './helpers/interceptor/ValidationIntercept
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    CronjobService,
   ],
 })
 export class AppModule {}
